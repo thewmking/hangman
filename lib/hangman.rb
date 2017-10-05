@@ -1,3 +1,5 @@
+require 'yaml'
+
 class Hangman
   attr_accessor :guess_count, :secret_word, :guess, :secret_display, :wrong_guesses, :game_over
 
@@ -25,6 +27,9 @@ class Hangman
 
   # show current guess count and secret_display
   def game_display
+    puts " "
+    puts " "
+    puts "At any time, type 'save' to save and exit"
     puts "Guess progress: #{@secret_display}"
     puts "Wrong guesses: #{@wrong_guesses}"
     puts "Guesses remaining: #{@guess_count}"
@@ -34,11 +39,13 @@ class Hangman
   def get_player_guess(guess_message)
     puts guess_message
     @guess = gets.chomp.strip.downcase
-    if @guess == "quit"
-      exit
-    end
-    if @guess == @secret_word
-      winner
+    case
+      when @guess == "quit"
+        exit
+      when @guess == @secret_word
+        winner
+      when @guess == "save"
+        save
     end
   end
 
@@ -70,13 +77,44 @@ class Hangman
     exit
   end
 
+  ## load & save
+
+  def save
+    Dir.mkdir('save') unless Dir.exists?('save')
+    puts "Enter a name for your save file"
+    save_name = gets.chomp.downcase.strip
+    File.open("./save/#{save_name}.yml", 'w') do |file|
+      file.write(YAML::dump(self))
+    end
+    puts "Game saved"
+    exit
+  end
+
+  def load
+    puts "enter the filename [no .yml or similar file type extensions]"
+    load_name  = gets.chomp.downcase.strip
+    saved_game = YAML.load(File.open("./save/#{load_name}.yml", 'r'))
+    puts "Game loaded!"
+    @game = saved_game
+    @game.run
+  end
+
 
   ## actually run the game
 
   def start
-    load_secret_word
-    init_guess_count
-    @wrong_guesses = []
+    puts "Load game or start new?"
+    puts "Type 'load' to load a previous save, or type 'new' to start a new game."
+    game_type = gets.chomp.downcase.strip
+    if game_type == "load"
+      load
+    elsif game_type == "new"
+      load_secret_word
+      init_guess_count
+      @wrong_guesses = []
+    else
+      start
+    end
   end
 
   def turn
