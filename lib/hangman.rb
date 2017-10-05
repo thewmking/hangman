@@ -37,6 +37,9 @@ class Hangman
     if @guess == "quit"
       exit
     end
+    if @guess == @secret_word
+      winner
+    end
   end
 
   # split guess & secret_word, see if guess characters are
@@ -78,7 +81,7 @@ class Hangman
 
   def turn
     game_display
-    guess_message = "Enter your guess below. Guess one letter at a time."
+    guess_message = "Enter your guess below. Guess one letter at a time unless you think you know the whole word."
     get_player_guess(guess_message)
     until @guess.length == 1
       guess_message = "Try again with only one letter this time."
